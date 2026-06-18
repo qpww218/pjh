@@ -82,4 +82,31 @@ st.divider()
 if st.session_state.total_seconds > 0:
     # 시작 / 일시정지 버튼 컨트롤
     if not st.session_state.is_running:
-        if st.button("▶️ 타이머 시작", use_container_width=True, type
+        if st.button("▶️ 타이머 시작", use_container_width=True, type="primary"):
+            st.session_state.is_running = True
+            st.rerun()
+    else:
+        if st.button("⏸️ 일시 정지", use_container_width=True):
+            st.session_state.is_running = False
+            st.rerun()
+
+    # 실시간 카운트다운 루프
+    while st.session_state.is_running and st.session_state.current_seconds > 0:
+        time.sleep(1)
+        st.session_state.current_seconds -= 1
+        
+        # 화면 실시간 업데이트
+        mins, secs = divmod(st.session_state.current_seconds, 60)
+        time_text.markdown(f"<h1 style='text-align: center; font-size: 80px;'>{mins:02d}:{secs:02d}</h1>", unsafe_allow_html=True)
+        
+        progress_percentage = float(st.session_state.current_seconds / st.session_state.total_seconds)
+        progress_bar.progress(max(0.0, min(1.0, progress_percentage)))
+        
+        # 시간이 0이 되었을 때의 처리 (핵심 변경 구간)
+        if st.session_state.current_seconds == 0:
+            st.session_state.is_running = False
+            st.session_state.is_finished = True  # 완료 상태를 True로 기록
+            st.session_state.total_seconds = 0   # 작동용 초는 초기화하되 화면은 유지됨
+            st.balloons()
+            st.success("🎉 설정하신 시간이 모두 완료되었습니다!")
+            st.rerun() # 완료 상태 반영을 위해 rerun
