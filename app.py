@@ -1,28 +1,174 @@
 import streamlit as st
+import random
+import time
 
 st.set_page_config(
-    page_title="키 크는 법 앱",
-    page_icon="📏"
+    page_title="학급 운영 도우미",
+    page_icon="🏫",
+    layout="wide"
 )
 
-st.title("📏 키 크는 법 알려주는 앱")
+# 세션 상태 초기화
+if "selected_students" not in st.session_state:
+    st.session_state.selected_students = []
 
-st.write("생활 습관을 입력하면 키 성장 팁을 알려줍니다.")
+st.title("🏫 학급 운영 도우미")
 
-sleep = st.slider("하루 수면 시간", 0, 12, 8)
-exercise = st.selectbox(
-    "운동 여부",
-    ["거의 안 함", "가끔 함", "매일 함"]
-)
+st.markdown("""
+반장과 선생님의 효율적인 학급 운영을 돕는 웹앱입니다.
 
-st.subheader("결과")
+### 제공 기능
+- 🪑 자리 배치
+- 🎤 발표자 선정
+- ⏰ 타이머
+""")
 
-if sleep >= 8 and exercise == "매일 함":
-    st.success("좋은 습관입니다! 수면과 운동을 꾸준히 유지하세요.")
-elif sleep < 6:
-    st.warning("수면 시간이 부족합니다. 충분한 수면이 중요합니다.")
-else:
-    st.info("균형 잡힌 식사와 규칙적인 운동을 추천합니다.")
+tab1, tab2, tab3 = st.tabs([
+    "🪑 자리 배치",
+    "🎤 발표자 선정",
+    "⏰ 타이머"
+])
 
-st.markdown("---")
-st.caption("※ 실제 키 성장은 유전, 영양, 수면 등 다양한 영향을 받습니다.")
+# ---------------------------
+# 자리 배치
+# ---------------------------
+with tab1:
+
+    st.header("🪑 랜덤 자리 배치")
+
+    names_text = st.text_area(
+        "학생 명단 입력 (한 줄에 한 명)",
+        height=200,
+        key="seat_students"
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        rows = st.number_input(
+            "행 수",
+            min_value=1,
+            value=5
+        )
+
+    with col2:
+        cols = st.number_input(
+            "열 수",
+            min_value=1,
+            value=6
+        )
+
+    if st.button("자리 배치 생성"):
+
+        students = [
+            name.strip()
+            for name in names_text.split("\n")
+            if name.strip()
+        ]
+
+        if len(students) == 0:
+            st.warning("학생 명단을 입력해주세요.")
+        else:
+
+            random.shuffle(students)
+
+            total_seats = rows * cols
+
+            while len(students) < total_seats:
+                students.append("빈자리")
+
+            st.subheader("배치 결과")
+
+            index = 0
+
+            for r in range(rows):
+
+                cols_data = st.columns(cols)
+
+                for c in range(cols):
+                    with cols_data[c]:
+                        st.info(students[index])
+                    index += 1
+
+# ---------------------------
+# 발표자 선정
+# ---------------------------
+with tab2:
+
+    st.header("🎤 발표자 선정")
+
+    names_text = st.text_area(
+        "학생 명단 입력",
+        height=200,
+        key="speaker_students"
+    )
+
+    students = [
+        name.strip()
+        for name in names_text.split("\n")
+        if name.strip()
+    ]
+
+    if st.button("발표자 뽑기"):
+
+        remaining = [
+            s for s in students
+            if s not in st.session_state.selected_students
+        ]
+
+        if len(students) == 0:
+            st.warning("학생 명단을 입력해주세요.")
+
+        elif len(remaining) == 0:
+            st.warning("모든 학생이 이미 선택되었습니다.")
+
+        else:
+            selected = random.choice(remaining)
+
+            st.session_state.selected_students.append(selected)
+
+            st.success(f"🎉 발표자: {selected}")
+
+    if st.session_state.selected_students:
+
+        st.subheader("선택된 발표자")
+
+        for student in st.session_state.selected_students:
+            st.write("•", student)
+
+        if st.button("발표자 기록 초기화"):
+            st.session_state.selected_students = []
+            st.rerun()
+
+# ---------------------------
+# 타이머
+# ---------------------------
+with tab3:
+
+    st.header("⏰ 타이머")
+
+    minutes = st.number_input(
+        "시간(분)",
+        min_value=1,
+        value=1
+    )
+
+    if st.button("타이머 시작"):
+
+        timer_placeholder = st.empty()
+
+        total_seconds = int(minutes * 60)
+
+        for sec in range(total_seconds, -1, -1):
+
+            mins = sec // 60
+            secs = sec % 60
+
+            timer_placeholder.metric(
+                "남은 시간",
+                f"{mins:02d}:{secs:02d}"
+            )
+
+            time.sleep(1)
+
+        st.success("⏰ 시간 종료!")
