@@ -28,7 +28,7 @@ mode_cols = st.columns(2)
 
 with mode_cols[0]:
     # 시계 모드 버튼 (현재 시계 모드면 강조)
-    if st.button("⏱️ 대한민국 시계 보기", use_container_width=True, type="primary" if st.session_state.current_mode == "시계" else "secondary"):
+    if st.button("⏱️ 시계 보기", use_container_width=True, type="primary" if st.session_state.current_mode == "시계" else "secondary"):
         st.session_state.current_mode = "시계"
         # 시계로 돌아갈 때는 작동 중이던 타이머 리셋
         st.session_state.total_seconds = 0
