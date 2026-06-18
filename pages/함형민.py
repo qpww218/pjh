@@ -19,7 +19,7 @@ if "current_mode" not in st.session_state:
     st.session_state.current_mode = "시계"  # 기본 모드는 '시계'로 설정
 
 # 앱 타이틀
-st.title("⏱️ 시각적 심플 타이머 & 시계")
+st.title("⏱️ 타이머 & 시계")
 
 st.divider()
 
