@@ -1,3 +1,3 @@
 import streamlit as st
 
-tittle["asdf"]
+tittle("asdf")
